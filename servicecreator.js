@@ -1,6 +1,7 @@
 function createNeedingService(execlib,ParentServicePack){
   var ParentService = ParentServicePack.Service,
-    dataSuite = execlib.dataSuite;
+    dataSuite = execlib.dataSuite,
+    lib = execlib.lib;
 
   function factoryCreator(parentFactory){
     return {
@@ -11,9 +12,15 @@ function createNeedingService(execlib,ParentServicePack){
 
   function NeedingService(prophash){
     ParentService.call(this,prophash);
+    this.global = false; //needs are not globally registered by default
+    if(!('satisfaction' in prophash)){
+      throw new lib.Error('NO_SATISFACTION_FOR_NEEDING_SERVICE','Property hash misses the satisfaction field');
+    }
+    this.satisfaction = prophash.satisfaction;
   }
   ParentService.inherit(NeedingService,factoryCreator,require('./storagedescriptor'));
   NeedingService.prototype.__cleanUp = function(){
+    this.satisfaction = null;
     ParentService.prototype.__cleanUp.call(this);
   };
   NeedingService.prototype.createStorage = function(storagedescriptor){
