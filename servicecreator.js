@@ -16,11 +16,10 @@ function createNeedingService(execlib,ParentServicePack){
     if(!('satisfaction' in prophash)){
       throw new lib.Error('NO_SATISFACTION_FOR_NEEDING_SERVICE','Property hash misses the satisfaction field');
     }
-    this.satisfaction = prophash.satisfaction;
+    this.state.set('satisfaction',prophash.satisfaction);
   }
   ParentService.inherit(NeedingService,factoryCreator,require('./storagedescriptor'));
   NeedingService.prototype.__cleanUp = function(){
-    this.satisfaction = null;
     ParentService.prototype.__cleanUp.call(this);
   };
   NeedingService.prototype.createStorage = function(storagedescriptor){
