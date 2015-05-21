@@ -18,12 +18,13 @@ function createServiceUser(execlib,ParentUser){
     taskRegistry.run('readState',{
       sink:state.sink,
       stream:state,
-      name:this.__service.state.get('satisfaction'),
+      name:this.__service.satisfaction,
       cb:this.onSatisfaction.bind(this,state.sink)
     });
   };
   ServiceUser.prototype.onSatisfaction = function(sink,satisfaction){
     console.log('Satisfaction',satisfaction);
+    /*
     if(satisfaction){
       sink.call('close').done(function(){
         console.log('close ok',arguments);
@@ -31,6 +32,7 @@ function createServiceUser(execlib,ParentUser){
         console.error('close nok',arguments);
       });
     }
+    */
   };
 
   return ServiceUser;
