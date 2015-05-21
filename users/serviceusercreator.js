@@ -24,7 +24,6 @@ function createServiceUser(execlib,ParentUser){
   };
   ServiceUser.prototype.onSatisfaction = function(sink,satisfaction){
     console.log('Satisfaction',satisfaction);
-    /*
     if(satisfaction){
       sink.call('close').done(function(){
         console.log('close ok',arguments);
@@ -32,7 +31,6 @@ function createServiceUser(execlib,ParentUser){
         console.error('close nok',arguments);
       });
     }
-    */
   };
 
   return ServiceUser;
