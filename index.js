@@ -5,7 +5,11 @@ function createServicePack(execlib){
 
   return {
     Service: require('./servicecreator')(execlib,ParentServicePack),
-    SinkMap: require('./sinkmapcreator')(execlib,ParentServicePack)
+    SinkMap: require('./sinkmapcreator')(execlib,ParentServicePack),
+    Tasks: [{
+      name: 'consumeNeedingService',
+      klass: require('./tasks/consumeneedingservice')(execlib)
+    }]
   };
 }
 
