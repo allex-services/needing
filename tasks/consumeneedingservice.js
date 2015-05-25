@@ -45,46 +45,33 @@ function createConsumeNeedingService(execlib){
   };
   NeedingServiceConsumer.prototype.serveNeeds = function(){
     if(!this.shouldServeNeeds()){
-      console.log('Cannot start serving needs at all');
+      this.log('Cannot start serving needs at all');
       return;
     }
-    console.log('serveNeeds?');
+    this.log('serveNeeds?');
     if(this.needs.length){
       var needobj = {need:null};
       this.needs.some(this.isNeedBiddable.bind(this,needobj));
       if(!needobj.need){
-        console.log('No more needs to bid on');
+        this.log('No more needs to bid on');
         return;
       }
       this.serveNeed(needobj.need);
     }else{
-      console.log('No more needs');
+      this.log('No more needs');
     }
   };
   NeedingServiceConsumer.prototype.serveNeed = function(need){
-    console.log('serving need',need);
-    /*
-    try{
-      registry.register(need.modulename);
-    }
-    catch(e){
-      console.log(e.stack);
-      console.error(e);
-    }
-    */
-    try{
+    this.log('serving need',need);
     this.sink.subConnect(need.instancename,this.identityForNeed(need),{}).done(
       this.doBid.bind(this,need),
       function(){
         console.error('cannot subConnect to Need',need.instancename,arguments);
       }
     );
-    }catch(e){
-      console.log(e);
-    }
   };
   NeedingServiceConsumer.prototype.doBid = function(need,needsink){
-    console.log('doBid',need,needsink);
+    this.log('doBid',need,needsink);
     taskRegistry.run('doBidCycle',{
       sink:needsink,
       bidobject:{},
