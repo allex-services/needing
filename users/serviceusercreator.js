@@ -13,24 +13,6 @@ function createServiceUser(execlib,ParentUser){
   ServiceUser.prototype.__cleanUp = function(){
     ParentUser.prototype.__cleanUp.call(this);
   };
-  ServiceUser.prototype._onSubServiceState = function(state,record){
-    ParentUser.prototype._onSubServiceState.call(this,state,record);
-    taskRegistry.run('readState',{
-      state:state,
-      name:this.__service.satisfaction,
-      cb:this.onSatisfaction.bind(this,state.sink)
-    });
-  };
-  ServiceUser.prototype.onSatisfaction = function(sink,satisfaction){
-    console.log('Satisfaction',satisfaction);
-    if(satisfaction){
-      sink.call('close').done(function(){
-        console.log('close ok',arguments);
-      },function(){
-        console.error('close nok',arguments);
-      });
-    }
-  };
 
   return ServiceUser;
 }
