@@ -16,8 +16,7 @@ function createServiceUser(execlib,ParentUser){
   ServiceUser.prototype._onSubServiceState = function(state,record){
     ParentUser.prototype._onSubServiceState.call(this,state,record);
     taskRegistry.run('readState',{
-      sink:state.sink,
-      stream:state,
+      state:state,
       name:this.__service.satisfaction,
       cb:this.onSatisfaction.bind(this,state.sink)
     });
