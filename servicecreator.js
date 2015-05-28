@@ -20,7 +20,7 @@ function createNeedingService(execlib,ParentServicePack){
         field: satisfactiondescriptor
       };
     }
-    var ret = filterFactory(satisfactiondescriptor);
+    var ret = filterFactory.createFromDescriptor(satisfactiondescriptor);
     if(!ret){
       var e = new lib.Error('INVALID_DATA_FILTER_DESCRIPTOR');
       e.descriptor = satisfactiondescriptor;
