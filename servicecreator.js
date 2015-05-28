@@ -13,20 +13,23 @@ function createNeedingService(execlib,ParentServicePack){
     };
   }
 
-  function produceSatisfactionFilter(satisfactiondescriptor){
+  function produceSatisfactionFilterDescriptor(satisfactiondescriptor){
     if(lib.isString(satisfactiondescriptor)){
       return {
         op: 'notexists',
         field: satisfactiondescriptor
       };
     }
-    var ret = filterFactory.createFromDescriptor(satisfactiondescriptor);
-    if(!ret){
+    var check = filterFactory.createFromDescriptor(satisfactiondescriptor);
+    if(!check){
       var e = new lib.Error('INVALID_DATA_FILTER_DESCRIPTOR');
       e.descriptor = satisfactiondescriptor;
       throw e;
     }
-    return ret;
+    return {
+      op: 'not',
+      filter: satisfactiondescriptor
+    };
   }
 
   function NeedingService(prophash){
@@ -35,19 +38,16 @@ function createNeedingService(execlib,ParentServicePack){
     if(!('satisfaction' in prophash)){
       throw new lib.Error('NO_SATISFACTION_FOR_NEEDING_SERVICE','Property hash misses the satisfaction field');
     }
-    this.satisfactionFilter = produceSatisfactionFilter(prophash.satisfaction);
+    this.satisfactionFilterDescriptor = produceSatisfactionFilterDescriptor(prophash.satisfaction);
+    console.log('satisfaction',this.satisfactionFilterDescriptor);
     this.satisfactionMonitor = null;
   }
   ParentService.inherit(NeedingService,factoryCreator,require('./storagedescriptor'));
   NeedingService.prototype.__cleanUp = function(){
-    if(!this.satisfactionFilter){
-      return;
-    }
     if(this.satisfactionMonitor){
       throw new lib.Error('SATIFACTION_MONITOR_SHOULD_NOT_EXIST_IN_CLEANUP');
     }
-    this.satisfactionFilter.destroy();
-    this.satisfactionFilter = null;
+    this.satisfactionFilterDescriptor = null;
     ParentService.prototype.__cleanUp.call(this);
   };
   NeedingService.prototype.close = function(){
@@ -59,7 +59,7 @@ function createNeedingService(execlib,ParentServicePack){
   };
   NeedingService.prototype.introduceUser = function(userhash){
     if(userhash && userhash.filter && userhash.filter==='unsatisfied'){
-      userhash.filter = this.satisfactionFilter;
+      userhash.filter = this.satisfactionFilterDescriptor;
     }
     return ParentService.prototype.introduceUser.call(this,userhash);
   };
