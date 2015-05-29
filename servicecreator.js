@@ -13,7 +13,7 @@ function createNeedingService(execlib,ParentServicePack){
     };
   }
 
-  function produceSatisfactionFilterDescriptor(satisfactiondescriptor){
+  function produceUnsatisfiedFilterDescriptor(satisfactiondescriptor){
     if(lib.isString(satisfactiondescriptor)){
       return {
         op: 'notexists',
@@ -38,8 +38,7 @@ function createNeedingService(execlib,ParentServicePack){
     if(!('satisfaction' in prophash)){
       throw new lib.Error('NO_SATISFACTION_FOR_NEEDING_SERVICE','Property hash misses the satisfaction field');
     }
-    this.satisfactionFilterDescriptor = produceSatisfactionFilterDescriptor(prophash.satisfaction);
-    console.log('satisfaction',this.satisfactionFilterDescriptor);
+    this.unsatisfiedFilterDescriptor = produceUnsatisfiedFilterDescriptor(prophash.satisfaction);
     this.satisfactionMonitor = null;
   }
   ParentService.inherit(NeedingService,factoryCreator,require('./storagedescriptor'));
@@ -47,7 +46,7 @@ function createNeedingService(execlib,ParentServicePack){
     if(this.satisfactionMonitor){
       throw new lib.Error('SATIFACTION_MONITOR_SHOULD_NOT_EXIST_IN_CLEANUP');
     }
-    this.satisfactionFilterDescriptor = null;
+    this.unsatisfiedFilterDescriptor = null;
     ParentService.prototype.__cleanUp.call(this);
   };
   NeedingService.prototype.close = function(){
@@ -59,7 +58,7 @@ function createNeedingService(execlib,ParentServicePack){
   };
   NeedingService.prototype.introduceUser = function(userhash){
     if(userhash && userhash.filter && userhash.filter==='unsatisfied'){
-      userhash.filter = this.satisfactionFilterDescriptor;
+      userhash.filter = this.unsatisfiedFilterDescriptor;
     }
     return ParentService.prototype.introduceUser.call(this,userhash);
   };
