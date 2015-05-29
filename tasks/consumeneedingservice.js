@@ -44,6 +44,7 @@ function createConsumeNeedingService(execlib){
     d.then(this.serveNeeds.bind(this));
   };
   NeedingServiceConsumer.prototype.serveNeeds = function(){
+    console.log('serveNeeds?',this.needs);
     if(!this.shouldServeNeeds()){
       this.log('Cannot start serving needs at all');
       return;
@@ -80,7 +81,12 @@ function createConsumeNeedingService(execlib){
     });
   };
   NeedingServiceConsumer.prototype.isNeedBiddable = function(needobj,need){
-    if(this.shouldServeNeed(need)){
+    var ssn = this.shouldServeNeed(need);
+    if(ssn){
+      if(ssn.done){
+        ssn.done(this.serveNeeds.bind(this));
+        return false;
+      }
       needobj.need = need;
       return true;
     }
