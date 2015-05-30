@@ -57,25 +57,30 @@ function createConsumeNeedingService(execlib){
         this.log('No more needs to bid on');
         return;
       }
-      this.serveNeed(needobj.need);
+      this.produceNeed(needobj.need);
     }else{
       this.log('No more needs');
     }
   };
-  NeedingServiceConsumer.prototype.serveNeed = function(need){
+  NeedingServiceConsumer.prototype.produceNeed = function(need){
+    var d = q.defer();
+    this.bidForNeed(need,d);
+    d.promise.done(this.serveNeed.bind(this,need));
+  };
+  NeedingServiceConsumer.prototype.serveNeed = function(need,bidobj){
     this.log('serving need',need);
     this.sink.subConnect(need.instancename,this.identityForNeed(need),{}).done(
-      this.doBid.bind(this,need),
+      this.doBid.bind(this,need,bidobj),
       function(){
         console.error('cannot subConnect to Need',need.instancename,arguments);
       }
     );
   };
-  NeedingServiceConsumer.prototype.doBid = function(need,needsink){
+  NeedingServiceConsumer.prototype.doBid = function(need,bidobj,needsink){
     this.log('doBid',need,needsink);
     taskRegistry.run('doBidCycle',{
       sink:needsink,
-      bidobject:{},
+      bidobject:bidobj,
       challengeProducer:this.onChallenge.bind(this,need),
       cb:lib.dummyFunc //there's nothing to do on successful challenge response
     });
@@ -97,8 +102,9 @@ function createConsumeNeedingService(execlib){
   NeedingServiceConsumer.prototype.identityForNeed = function(need){
     return {};
   };
-  NeedingServiceConsumer.prototype.bidForNeed = function(need){
-    return {};
+  NeedingServiceConsumer.prototype.bidForNeed = function(need,defer){
+    console.log('bidForNeed?',need,defer);
+    defer.resolve({});
   };
   NeedingServiceConsumer.prototype.compulsoryConstructionProperties = ['sink','shouldServeNeeds','shouldServeNeed'];
   return NeedingServiceConsumer;
