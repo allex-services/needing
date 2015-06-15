@@ -1,4 +1,5 @@
 function createNeedingService(execlib,ParentServicePack){
+  'use strict';
   var ParentService = ParentServicePack.Service,
       execSuite = execlib.execSuite,
       taskRegistry = execSuite.taskRegistry,
