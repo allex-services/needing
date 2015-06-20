@@ -19,12 +19,17 @@ function createConsumeNeedingService(execlib){
     }
     this.respondToChallenge = prophash.respondToChallenge;
     this.needs = [];
+    this.materializeDataTask = null;
   }
   lib.inherit(NeedingServiceConsumer,SinkTask);
   NeedingServiceConsumer.prototype.__cleanUp = function(){
     if(!this.needs){
       return;
     }
+    if(this.materializeDataTask){
+      this.materializeDataTask.destroy();
+    }
+    this.materializeDataTask = null;
     this.needs = null;
     this.shouldServeNeed = null;
     this.shouldServeNeeds = null;
@@ -32,7 +37,10 @@ function createConsumeNeedingService(execlib){
     SinkTask.prototype.__cleanUp.call(this);
   };
   NeedingServiceConsumer.prototype.go = function(){
-    taskRegistry.run('materializeData',{
+    if(this.materializeDataTask){
+      return;
+    }
+    this.materializeDataTask = taskRegistry.run('materializeData',{
       sink: this.sink,
       data: this.needs,
       onInitiated: this.serveNeeds.bind(this),
@@ -45,12 +53,14 @@ function createConsumeNeedingService(execlib){
     d.then(this.serveNeeds.bind(this));
   };
   NeedingServiceConsumer.prototype.serveNeeds = function(){
-    console.log('serveNeeds?',this.needs);
+    if(!this.needs){
+      return;
+    }
+    this.log('serveNeeds?',this.needs);
     if(!this.shouldServeNeeds()){
       this.log('Cannot start serving needs at all');
       return;
     }
-    this.log('serveNeeds?');
     if(this.needs.length){
       var needobj = {need:null};
       this.needs.some(this.isNeedBiddable.bind(this,needobj));
@@ -104,7 +114,7 @@ function createConsumeNeedingService(execlib){
     return {};
   };
   NeedingServiceConsumer.prototype.bidForNeed = function(need,defer){
-    console.log('bidForNeed?',need,defer);
+    this.log('bidForNeed?',need,defer);
     defer.resolve({});
   };
   NeedingServiceConsumer.prototype.compulsoryConstructionProperties = ['sink','shouldServeNeeds','shouldServeNeed'];
