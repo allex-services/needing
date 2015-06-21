@@ -19,17 +19,14 @@ function createConsumeNeedingService(execlib){
     }
     this.respondToChallenge = prophash.respondToChallenge;
     this.needs = [];
-    this.materializeDataTask = null;
+    this.alreadymaterializing = false;
   }
   lib.inherit(NeedingServiceConsumer,SinkTask);
   NeedingServiceConsumer.prototype.__cleanUp = function(){
     if(!this.needs){
       return;
     }
-    if(this.materializeDataTask){
-      this.materializeDataTask.destroy();
-    }
-    this.materializeDataTask = null;
+    this.alreadymaterializing = null;
     this.needs = null;
     this.shouldServeNeed = null;
     this.shouldServeNeeds = null;
@@ -37,10 +34,11 @@ function createConsumeNeedingService(execlib){
     SinkTask.prototype.__cleanUp.call(this);
   };
   NeedingServiceConsumer.prototype.go = function(){
-    if(this.materializeDataTask){
+    if(this.alreadymaterializing){
       return;
     }
-    this.materializeDataTask = taskRegistry.run('materializeData',{
+    this.alreadymaterializing = true;
+    taskRegistry.run('materializeData',{
       sink: this.sink,
       data: this.needs,
       onInitiated: this.serveNeeds.bind(this),
