@@ -97,7 +97,7 @@ function createConsumeNeedingService(execlib){
   NeedingServiceConsumer.prototype.isNeedBiddable = function(needobj,need){
     var ssn = this.shouldServeNeed(need);
     if(ssn){
-      if(ssn.done){
+      if('function' === typeof ssn.done){
         ssn.done(this.serveNeeds.bind(this));
         return false;
       }
