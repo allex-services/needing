@@ -89,7 +89,7 @@ function createNeedingService(execlib,ParentServicePack){
       console.error('No need found that is named',instancename);
       return;
     }
-    subsink.call('close');
+    subsink.destroy();
   };
   return NeedingService;
 }
