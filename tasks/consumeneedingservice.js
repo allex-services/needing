@@ -38,8 +38,9 @@ function createConsumeNeedingService(execlib){
       return;
     }
     this.alreadymaterializing = true;
-    taskRegistry.run('materializeData',{
+    taskRegistry.run('materializeQuery',{
       sink: this.sink,
+      continuous: true,
       data: this.needs,
       onInitiated: this.serveNeeds.bind(this),
       onNewRecord: this.serveNeeds.bind(this),

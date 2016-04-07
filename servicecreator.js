@@ -76,8 +76,9 @@ function createNeedingService(execlib,ParentServicePack){
   };
   NeedingService.prototype.onUnsatisfiedUser = function(unsatisfiedsink){
     this.satisfactionMonitor = unsatisfiedsink;
-    taskRegistry.run('materializeData',{
+    taskRegistry.run('materializeQuery',{
       sink: unsatisfiedsink,
+      continuous: true,
       data: [],
       onRecordDeletion: this.onNeedSatisfied.bind(this)
     });
