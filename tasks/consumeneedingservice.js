@@ -47,10 +47,6 @@ function createConsumeNeedingService(execlib){
       onDelete: this.serveNeeds.bind(this),
     });
   };
-  NeedingServiceConsumer.prototype.checkNeeds = function(){
-    var d = q.defer();
-    d.then(this.serveNeeds.bind(this));
-  };
   NeedingServiceConsumer.prototype.serveNeeds = function(){
     if(!this.needs){
       return;

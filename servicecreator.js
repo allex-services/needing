@@ -46,12 +46,6 @@ function createNeedingService(execlib,ParentServicePack){
     this.unsatisfiedFilterDescriptor = null;
     ParentService.prototype.__cleanUp.call(this);
   };
-  NeedingService.prototype.introduceUser = function(userhash){
-    if(userhash && userhash.filter && userhash.filter==='unsatisfied'){
-      userhash.filter = this.unsatisfiedFilterDescriptor;
-    }
-    return ParentService.prototype.introduceUser.call(this,userhash);
-  };
   NeedingService.prototype.createStorage = function(storagedescriptor){
     return ParentService.prototype.createStorage.call(this,storagedescriptor);
   };
@@ -63,6 +57,12 @@ function createNeedingService(execlib,ParentServicePack){
       data: [],
       onRecordDeletion: this.onNeedSatisfied.bind(this)
     });
+  };
+  NeedingService.prototype.preprocessQueryPropertyHash = function (querypropertyhash) {
+    if (querypropertyhash && querypropertyhash.filter === 'unsatisfied') {
+      querypropertyhash.filter = this.unsatisfiedFilterDescriptor;
+    }
+    return querypropertyhash;
   };
   NeedingService.prototype.onNeedSatisfied = function(satisfieddatahash){
     var instancename = satisfieddatahash.instancename;
