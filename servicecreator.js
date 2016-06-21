@@ -1,7 +1,6 @@
-function createNeedingService(execlib,ParentServicePack){
+function createNeedingService(execlib,ParentService){
   'use strict';
-  var ParentService = ParentServicePack.Service,
-      execSuite = execlib.execSuite,
+  var execSuite = execlib.execSuite,
       taskRegistry = execSuite.taskRegistry,
       dataSuite = execlib.dataSuite,
       filterFactory = dataSuite.filterFactory,
