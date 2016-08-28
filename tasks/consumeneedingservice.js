@@ -11,6 +11,7 @@ function createConsumeNeedingService(execlib){
     this.sink = prophash.sink;
     this.shouldServeNeeds = prophash.shouldServeNeeds;
     this.shouldServeNeed = prophash.shouldServeNeed;
+    this.serveNeedFailed = prophash.serveNeedFailed;
     if(prophash.identityForNeed){
       this.identityForNeed = prophash.identityForNeed;
     }
@@ -20,14 +21,20 @@ function createConsumeNeedingService(execlib){
     this.respondToChallenge = prophash.respondToChallenge;
     this.needs = [];
     this.alreadymaterializing = false;
+    this.startIndex = 0;
   }
   lib.inherit(NeedingServiceConsumer,SinkTask);
   NeedingServiceConsumer.prototype.__cleanUp = function(){
+    console.log('consumeNeedingService dead');
     if(!this.needs){
       return;
     }
+    this.startIndex = null;
     this.alreadymaterializing = null;
     this.needs = null;
+    this.respondToChallenge = null;
+    this.bidForNeed = null;
+    this.identityForNeed = null;
     this.shouldServeNeed = null;
     this.shouldServeNeeds = null;
     this.sink = null;
@@ -48,6 +55,7 @@ function createConsumeNeedingService(execlib){
     });
   };
   NeedingServiceConsumer.prototype.serveNeeds = function(){
+    var nl, i, need;
     if(!this.needs){
       return;
     }
@@ -56,14 +64,20 @@ function createConsumeNeedingService(execlib){
       this.log('Cannot start serving needs at all');
       return;
     }
-    if(this.needs.length){
-      var needobj = {need:null};
-      this.needs.some(this.isNeedBiddable.bind(this,needobj));
-      if(!needobj.need){
+    nl = this.needs.length;
+    if(nl>this.startIndex){
+      for (i=this.startIndex; i<nl; i++) {
+        need = this.needs[i];
+        if (this.isNeedBiddable(need)) {
+          break;
+        }
+        need = null;
+      }
+      if(!need){
         this.log('No more needs to bid on');
         return;
       }
-      this.produceNeed(needobj.need);
+      this.produceNeed(need);
     }else{
       this.log('No more needs');
     }
@@ -77,9 +91,7 @@ function createConsumeNeedingService(execlib){
     this.log('serving need',need);
     this.sink.subConnect(need.instancename,this.identityForNeed(need),{}).done(
       this.doBid.bind(this,need,bidobj),
-      function(){
-        console.error('cannot subConnect to Need',need.instancename,arguments);
-      }
+      this.onCannotSubConnect.bind(this, need.instancename)
     );
   };
   NeedingServiceConsumer.prototype.doBid = function(need,bidobj,needsink){
@@ -88,17 +100,17 @@ function createConsumeNeedingService(execlib){
       sink:needsink,
       bidobject:bidobj,
       challengeProducer:this.onChallenge.bind(this,need),
-      cb:lib.dummyFunc //there's nothing to do on successful challenge response
+      cb:this.onBidCycleSucceeded.bind(this),
+      errorcb: this.onBidCycleFailed.bind(this)
     });
   };
-  NeedingServiceConsumer.prototype.isNeedBiddable = function(needobj,need){
+  NeedingServiceConsumer.prototype.isNeedBiddable = function(need){
     var ssn = this.shouldServeNeed(need);
     if(ssn){
       if('function' === typeof ssn.done){
         ssn.done(this.serveNeeds.bind(this));
         return false;
       }
-      needobj.need = need;
       return true;
     }
   };
@@ -112,7 +124,20 @@ function createConsumeNeedingService(execlib){
     this.log('bidForNeed?',need,defer);
     defer.resolve({});
   };
-  NeedingServiceConsumer.prototype.compulsoryConstructionProperties = ['sink','shouldServeNeeds','shouldServeNeed'];
+  NeedingServiceConsumer.prototype.onBidCycleSucceeded = function () {
+    this.startIndex = 0;
+  };
+  NeedingServiceConsumer.prototype.onBidCycleFailed = function () {
+    this.serveNeedFailed();
+    this.startIndex++;
+    this.serveNeeds();
+  };
+  NeedingServiceConsumer.prototype.onCannotSubConnect = function (instancename){
+    console.error('cannot subConnect to Need',instancename,arguments);
+    instancename = null;
+    this.serveNeeds();
+  };
+  NeedingServiceConsumer.prototype.compulsoryConstructionProperties = ['sink','shouldServeNeeds','shouldServeNeed','serveNeedFailed'];
   return NeedingServiceConsumer;
 }
 
