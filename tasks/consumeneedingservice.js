@@ -135,6 +135,7 @@ function createConsumeNeedingService(execlib){
   NeedingServiceConsumer.prototype.onCannotSubConnect = function (instancename){
     console.error('cannot subConnect to Need',instancename,arguments);
     instancename = null;
+    this.serveNeedFailed();
     this.serveNeeds();
   };
   NeedingServiceConsumer.prototype.compulsoryConstructionProperties = ['sink','shouldServeNeeds','shouldServeNeed','serveNeedFailed'];
