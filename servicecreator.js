@@ -56,6 +56,7 @@ function createNeedingService(execlib,ParentService){
       data: [],
       onRecordDeletion: this.onNeedSatisfied.bind(this)
     });
+    return ParentService.prototype.onSuperSink.call(this, supersink);
   };
   NeedingService.prototype.preprocessQueryPropertyHash = function (querypropertyhash) {
     if (querypropertyhash && querypropertyhash.filter === 'unsatisfied') {
