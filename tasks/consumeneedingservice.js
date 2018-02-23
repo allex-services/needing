@@ -91,7 +91,7 @@ function createConsumeNeedingService(execlib){
     this.log('serving need',need);
     this.sink.subConnect(need.instancename,this.identityForNeed(need),{}).done(
       this.doBid.bind(this,need,bidobj),
-      this.onCannotSubConnect.bind(this, need.instancename)
+      this.onCannotSubConnect.bind(this, need)
     );
   };
   NeedingServiceConsumer.prototype.doBid = function(need,bidobj,needsink){
@@ -101,7 +101,7 @@ function createConsumeNeedingService(execlib){
       bidobject:bidobj,
       challengeProducer:this.onChallenge.bind(this,need),
       cb:this.onBidCycleSucceeded.bind(this),
-      errorcb: this.onBidCycleFailed.bind(this)
+      errorcb: this.onBidCycleFailed.bind(this, need)
     });
   };
   NeedingServiceConsumer.prototype.isNeedBiddable = function(need){
@@ -116,6 +116,7 @@ function createConsumeNeedingService(execlib){
   };
   NeedingServiceConsumer.prototype.onChallenge = function(need,challenge,defer){
     this.respondToChallenge(need,challenge,defer);
+    need = null;
   };
   NeedingServiceConsumer.prototype.identityForNeed = function(need){
     return {};
@@ -127,16 +128,17 @@ function createConsumeNeedingService(execlib){
   NeedingServiceConsumer.prototype.onBidCycleSucceeded = function () {
     this.startIndex = 0;
   };
-  NeedingServiceConsumer.prototype.onBidCycleFailed = function () {
-    this.serveNeedFailed();
+  NeedingServiceConsumer.prototype.onBidCycleFailed = function (need) {
+    this.serveNeedFailed(need);
     this.startIndex++;
     this.serveNeeds();
+    need = null;
   };
-  NeedingServiceConsumer.prototype.onCannotSubConnect = function (instancename){
-    console.error('cannot subConnect to Need',instancename,arguments);
-    instancename = null;
-    this.serveNeedFailed();
+  NeedingServiceConsumer.prototype.onCannotSubConnect = function (need){
+    //console.error('cannot subConnect to Need',need.instancename,arguments);
+    this.serveNeedFailed(need);
     this.serveNeeds();
+    need = null;
   };
   NeedingServiceConsumer.prototype.compulsoryConstructionProperties = ['sink','shouldServeNeeds','shouldServeNeed','serveNeedFailed'];
   return NeedingServiceConsumer;
