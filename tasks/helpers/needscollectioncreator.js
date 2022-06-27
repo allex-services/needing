@@ -2,35 +2,41 @@ function createNeedsCollection (lib, taskRegistry, coreslib) {
   'use strict';
 
   var q = lib.q,
-    qlib = lib.qlib;
+    qlib = lib.qlib,
+    shouldRun = true;
 
-    function objectSignature (obj) {
-      var keys = Object.keys(obj).sort(), i, ret = '', key;
-      for(i=0; i<keys.length; i++) {
-        key = keys[i];
-        if (!obj.hasOwnProperty(key)) continue;
-        ret += (key+thingySignature(obj[key]));
-      }
-      return ret;
+  function onShouldClose () {
+    shouldRun = false;
+  }
+  lib.shouldClose.attach(onShouldClose);
+
+  function objectSignature (obj) {
+    var keys = Object.keys(obj).sort(), i, ret = '', key;
+    for(i=0; i<keys.length; i++) {
+      key = keys[i];
+      if (!obj.hasOwnProperty(key)) continue;
+      ret += (key+thingySignature(obj[key]));
     }
-    function thingySignature (obj) {
-      if (obj == null) {
+    return ret;
+  }
+  function thingySignature (obj) {
+    if (obj == null) {
+      return 'null';
+    }
+    switch(typeof obj) {
+      case 'null':
         return 'null';
+      case 'boolean':
+      case 'number':
+      case 'string':
+            return obj;
+      case 'object':
+        return objectSignature(obj);
+      case 'undefined':
+      default:
+          return '';
       }
-      switch(typeof obj) {
-        case 'null':
-          return 'null';
-        case 'boolean':
-        case 'number':
-        case 'string':
-              return obj;
-        case 'object':
-          return objectSignature(obj);
-        case 'undefined':
-        default:
-            return '';
-        }
-    }
+  }
 
   function NeedRepresentation (consumer, need) {
     this.consumer = consumer;
@@ -144,6 +150,9 @@ function createNeedsCollection (lib, taskRegistry, coreslib) {
     this.biddingCycle();
   };
   NeedsCollection.prototype.biddingCycle = function () {
+    if (!shouldRun) {
+      return q.reject(new lib.Error('PROCESS_IS_DONE'));
+    }
     return qlib.newSteppedJobOnSteppedInstance(new coreslib.BidCycleMonitor(this)).go();
   };
 
@@ -159,7 +168,7 @@ function createNeedsCollection (lib, taskRegistry, coreslib) {
   };
 
   NeedsCollection.prototype.offerResolution = function (representation) {
-    console.log('should offer representation');
+    console.log('should offer representation with', representation && representation.need ? representation.need : 'no need');
     representation.purgeIssuerRelatedData();
     this.biddingCycle();
   };

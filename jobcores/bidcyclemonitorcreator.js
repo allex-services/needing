@@ -33,6 +33,9 @@ function createBidCycleMonitorJobCore (lib, mylib) {
     return res;
   };
   BidCycleMonitorJobCore.prototype.onBiddingCycleFail = function (reason) {
+    if (this.shouldContinue()) {
+      return;
+    }
     //console.log('biddingCycle error', reason ? (reason.code || reason.message) : 'none', 'got cycleNeed', this.cycleNeed);
     if (this.cycleNeed) {
       try {
