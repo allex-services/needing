@@ -65,8 +65,15 @@ function createNeedingService(execlib,ParentService){
     return querypropertyhash;
   };
   NeedingService.prototype.onNeedSatisfied = function(satisfieddatahash){
-    var instancename = satisfieddatahash.instancename;
-    var subsink = this.subservices.get(instancename);
+    var instancename, subsink;
+    if (!satisfieddatahash) {
+      return;
+    }
+    if (!this.subservices) {
+      return;
+    }
+    instancename = satisfieddatahash.instancename;
+    subsink = this.subservices.get(instancename);
     if(!subsink){
       console.error('No need found that is named',instancename);
       return;
